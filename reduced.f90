@@ -23,7 +23,7 @@ module procedure get_vaspstructure
 end interface vaspForce
 contains
   ! Routine to find a word, it could be anything
-  subroutine findword(word,line,found,i)
+subroutine findword(word,line,found,i)
   logical found
   character(*) line, word
   integer(4) i,l,k
@@ -39,7 +39,7 @@ contains
   if (line .eq. word) then
     found=.True.
   endif
-  end subroutine findword
+end subroutine findword
   ! Routine to get header information from POSCAR and extract lattice size, the number of atoms and type_of_atoms
   function get_structure(filename) result(self)
     type(lattice) :: self
@@ -228,6 +228,13 @@ if (num_args .eq. 2) then
   enddo
   deallocate(args)
 endif
+
+if (num_args .eq. 2) then
+  if(foundP .and. foundPF) then
+    write(*,*) "test things here!!!"
+  endif
+endif
+
 if (num_args .eq. 2) then
   if(foundP .and. foundPF) then
     deallocate(lat%atoms_type)
