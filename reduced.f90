@@ -87,16 +87,16 @@ total_atom=0
 do i=1,atom_type
 total_atom=total_atom+atom_type_num(i)
 enddo
+write(*,*) "total atom is: ",total_atom
 read(posread,'(A)',iostat=reason) line
 write(*,*) line
 allocate(position(total_atom,3))
-do i=1,maxl
-read(posread,*,iostat=reason) position(i,:)
-write(*,*) position(i,:)
+do i=1,total_atom
 if (reason < 0) then
 write(*,*) "END OF FILE"
 exit
 endif
+read(posread,*,iostat=reason) position(i,1),position(i,2),position(i,3)
 enddo
 close(posread)
 ! Check for direct coordinates
@@ -188,13 +188,6 @@ enddo
 enddo
 close(outread)
 write(*,*) "--------------------------------------------------------------------"
-do i=1,total_atom
-write(*,*) pos_cart(i,1),pos_cart(i,2),pos_cart(i,3)
-write(*,*) pos_outcar(i,1),pos_outcar(i,2),pos_outcar(i,3)
-write(*,*) pos_cart(i,1)-pos_outcar(i,1),pos_cart(i,2)-pos_outcar(i,2), &
-pos_cart(i,3)-pos_outcar(i,3)
-write(*,*) "--------------------------------------------------------------------"
-enddo
 deallocate(atom_type_num,position,pos_cart)
 deallocate(pos_outcar,force_outcar,pos_outcar_new)
 end program image
