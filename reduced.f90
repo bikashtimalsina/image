@@ -176,12 +176,13 @@ program image
 use poscar
 type(lattice) lat
 type(vaspForce) vasp
-integer(4) num_args, p, i
+integer(4) num_args, p, i, pf
 character(8) word*6
 character(8), dimension(:), allocatable :: args
 real(8) da,db,dc
 real(8),allocatable :: rij(:,:), a(:),position(:,:), alat(:)
 logical found,foundP,foundPF,foundO,foundOF
+pf=789
 num_args=command_argument_count()
 if (num_args .ne. 2) then
   write(*,*) "Please provide POSCAR and OUTCAR file during execution"
@@ -237,9 +238,6 @@ if (num_args .eq. 2) then
     allocate(a(3),alat(3))
     allocate(position(lat%total_atom,3))
     write(*,*) "****************************************************************************"
-    write(*,*) lat%direct(1,1),lat%direct(1,2),lat%direct(1,3)
-    write(*,*) lat%direct(2,1),lat%direct(2,2),lat%direct(2,3)
-    write(*,*) lat%direct(3,1),lat%direct(3,2),lat%direct(3,3)
     write(*,*) "****************************************************************************"
     do i=1,lat%total_atom
       write(*,*) lat%position(i,1), lat%position(i,2),lat%position(i,3)
@@ -330,13 +328,19 @@ if (num_args .eq. 2) then
       position(i,2)=a(1)*lat%direct(1,2)+a(2)*lat%direct(2,2)+a(3)*lat%direct(3,2)
       position(i,3)=a(1)*lat%direct(1,3)+a(2)*lat%direct(2,3)+a(3)*lat%direct(3,3)
       write(*,*) position(i,1), position(i,2), position(i,3)
-      write(*,*) "****************************************************************************"
+      write(*,*) "------------------------------------------------------------------------"
     enddo
   endif
 endif
-
+write(*,*) "****************************************************************************"
+write(*,*) "****************************************************************************"
 if (num_args .eq. 2) then
   if(foundP .and. foundPF) then
+    open(pf,file='pos-force.txt')
+    do i=1,lat%total_atom
+      write(pf,*) position(i,1), position(i,2), position(i,3), vasp%force(i,1), vasp%force(i,2), vasp%force(i,3)
+    enddo
+    close(pf)
     deallocate(lat%atoms_type)
     deallocate(lat%atoms_num)
     deallocate(lat%position)
