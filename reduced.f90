@@ -179,6 +179,8 @@ type(vaspForce) vasp
 integer(4) num_args, p, i
 character(8) word*6
 character(8), dimension(:), allocatable :: args
+real(8) da,db,dc
+real(8),allocatable :: rij(:,:), a(:),position(:,:), alat(:)
 logical found,foundP,foundPF,foundO,foundOF
 num_args=command_argument_count()
 if (num_args .ne. 2) then
@@ -231,7 +233,105 @@ endif
 
 if (num_args .eq. 2) then
   if(foundP .and. foundPF) then
-    write(*,*) "test things here!!!"
+    allocate(rij(lat%total_atom,3))
+    allocate(a(3),alat(3))
+    allocate(position(lat%total_atom,3))
+    write(*,*) "****************************************************************************"
+    write(*,*) lat%direct(1,1),lat%direct(1,2),lat%direct(1,3)
+    write(*,*) lat%direct(2,1),lat%direct(2,2),lat%direct(2,3)
+    write(*,*) lat%direct(3,1),lat%direct(3,2),lat%direct(3,3)
+    write(*,*) "****************************************************************************"
+    do i=1,lat%total_atom
+      write(*,*) lat%position(i,1), lat%position(i,2),lat%position(i,3)
+      write(*,*) vasp%position(i,1),vasp%position(i,2),vasp%position(i,3)
+      rij(i,1)=lat%position(i,1)-vasp%position(i,1)
+      rij(i,2)=lat%position(i,2)-vasp%position(i,2)
+      rij(i,3)=lat%position(i,3)-vasp%position(i,3)
+      alat(1)=dot_product(lat%position(i,:),lat%reciprocal(1,:))
+      alat(2)=dot_product(lat%position(i,:),lat%reciprocal(2,:))
+      alat(3)=dot_product(lat%position(i,:),lat%reciprocal(3,:))
+      a(1)=dot_product(vasp%position(i,:),lat%reciprocal(1,:))
+      a(2)=dot_product(vasp%position(i,:),lat%reciprocal(2,:))
+      a(3)=dot_product(vasp%position(i,:),lat%reciprocal(3,:))
+      da=alat(1)-a(1)
+      db=alat(2)-a(2)
+      dc=alat(3)-a(3)
+      ! This is for checking x-position in lattice
+      !------------------------------******-------------------------------------
+      if(da .lt. -0.8 .and. da .gt. -1) then
+        a(1)=1-a(1)
+      endif
+      if(da .lt. 1 .and. da .gt. 0.8) then
+        a(1)=a(1)-1
+      endif
+      if(da .lt. -0.5 .and. da .gt. -0.8) then
+        a(1)=a(1)-0.5
+      endif
+      if(da .lt. 0.8 .and. da .gt. 0.5) then
+        a(1)=a(1)+0.5
+      endif
+      if(da .lt. -0.1 .and. da .gt. -0.5) then
+        a(1)=a(1)-0.5
+        if(a(1) .lt. 0) then
+          a(1)=-a(1)
+        endif
+      endif
+      if(da .lt. 0.5 .and. da .gt. 0.1) then
+        a(1)=a(1)+0.5
+      endif
+      ! This is for checking y-position in lattice
+      !------------------------------******-------------------------------------
+      if(db .lt. -0.8 .and. db .gt. -1) then
+        a(2)=1-a(2)
+      endif
+      if(db .lt. 1 .and. db .gt. 0.8) then
+        a(2)=a(2)-1
+      endif
+      if(db .lt. -0.5 .and. db .gt. -0.8) then
+        a(2)=a(2)-0.5
+      endif
+      if(db .lt. 0.8 .and. db .gt. 0.5) then
+        a(2)=a(2)+0.5
+      endif
+      if(db .lt. -0.1 .and. db .gt. -0.5) then
+        a(2)=a(2)-0.5
+        if(a(2) .lt. 0) then
+          a(2)=-a(2)
+        endif
+      endif
+      if(db .lt. 0.5 .and. db .gt. 0.1) then
+        a(2)=a(2)+0.5
+      endif
+      !------------------------------******-------------------------------------
+      ! This is for checking z-position in lattice
+      if(dc .lt. -0.8 .and. dc .gt. -1) then
+        a(3)=1-a(3)
+      endif
+      if(dc .lt. 1 .and. dc .gt. 0.8) then
+        a(3)=a(3)-1
+      endif
+      if(dc .lt. -0.5 .and. dc .gt. -0.8) then
+        a(3)=a(3)-0.5
+      endif
+      if(dc .lt. 0.8 .and. dc .gt. 0.5) then
+        a(3)=a(3)+0.5
+      endif
+      if(dc .lt. -0.1 .and. dc .gt. -0.5) then
+        a(3)=a(3)-0.5
+        if(a(3) .lt. 0) then
+          a(3)=-a(3)
+        endif
+      endif
+      if(dc .lt. 0.5 .and. dc .gt. 0.1) then
+        a(3)=a(3)+0.5
+      endif
+      !------------------------------******-------------------------------------
+      position(i,1)=a(1)*lat%direct(1,1)+a(2)*lat%direct(2,1)+a(3)*lat%direct(3,1)
+      position(i,2)=a(1)*lat%direct(1,2)+a(2)*lat%direct(2,2)+a(3)*lat%direct(3,2)
+      position(i,3)=a(1)*lat%direct(1,3)+a(2)*lat%direct(2,3)+a(3)*lat%direct(3,3)
+      write(*,*) position(i,1), position(i,2), position(i,3)
+      write(*,*) "****************************************************************************"
+    enddo
   endif
 endif
 
@@ -242,6 +342,8 @@ if (num_args .eq. 2) then
     deallocate(lat%position)
     deallocate(vasp%position)
     deallocate(vasp%force)
+    deallocate(rij)
+    deallocate(a,alat,position)
   endif
 endif
 end program image
