@@ -47,7 +47,7 @@ end subroutine findword
     character(8) line*199, word*19
     character space*1, atom_name*2
     logical found_capD, found_smallD
-    integer(4) posread, i, j, k, p, n, space_num, atom_type, reason
+    integer(4) posread, i, j, k, p, n, space_num, atom_type, reason, slword, lword
     posread=123
     open(posread,file=filename)
       read(posread,'(A)') line
@@ -80,22 +80,41 @@ end subroutine findword
       space=' '
       space_num=iachar(space)
       atom_type=0
+      slword=len_trim(line)-1
+      lword=len_trim(line)
       do i=1,len_trim(line)-1
       if(iachar(line(i:i)) .ne. space_num .and. iachar(line(i+1:i+1)) .ne. space_num) then
       atom_type=atom_type+1
       endif
       enddo
+      if(iachar(line(slword:slword)) .ne. space_num .and. iachar(line(lword:lword)) .ne. space_num) then
+        atom_type=atom_type+1
+      endif
+      if(iachar(line(slword:slword)) .eq. space_num .and. iachar(line(lword:lword)) .ne. space_num) then
+        atom_type=atom_type+1
+      endif
       allocate(self%atoms_type(atom_type))
       allocate(self%atoms_num(atom_type))
       k=0
       do i=1,len_trim(line)-1
       if(iachar(line(i:i)) .ne. space_num .and. iachar(line(i+1:i+1)) .ne. space_num) then
       atom_name=line(i:i+1)
-      atom_type=atom_type+1
       k=k+1
       self%atoms_type(k)=atom_name
       endif
       enddo
+      if(iachar(line(slword:slword)) .ne. space_num .and. iachar(line(lword:lword)) .ne. space_num) then
+        atom_name=line(len_trim(line)-1:len_trim(line))
+        k=k+1
+        self%atoms_type(k)=atom_name
+      endif
+      if(iachar(line(slword:slword)) .eq. space_num .and. iachar(line(lword:lword)) .ne. space_num) then
+        atom_name=line(len_trim(line):len_trim(line))
+        k=k+1
+        self%atoms_type(k)=atom_name
+      endif
+      write(*,*) "The total type of atom is: ",atom_type
+      write(*,*) "The total atom is: ",self%atoms_type
       read(posread,*,iostat=reason) self%atoms_num(:)
       self%total_atom=sum(self%atoms_num)
       read(posread,*,iostat=reason) line
@@ -239,6 +258,7 @@ if (num_args .eq. 2) then
     allocate(position(lat%total_atom,3))
     write(*,*) "****************************************************************************"
     write(*,*) "****************************************************************************"
+    write(*,*) "The total number of atom is: ",lat%total_atom
     do i=1,lat%total_atom
       write(*,*) lat%position(i,1), lat%position(i,2),lat%position(i,3)
       write(*,*) vasp%position(i,1),vasp%position(i,2),vasp%position(i,3)
